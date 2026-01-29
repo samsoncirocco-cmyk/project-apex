@@ -1,0 +1,24 @@
+[Unit]
+Description=Apex SLED Commander Bot
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Type=notify
+Restart=on-failure
+RestartSec=10s
+WatchdogSec=60s
+# Assume container is named 'sled-commander'
+ExecStart=/usr/bin/docker start -a sled-commander
+ExecStop=/usr/bin/docker stop sled-commander
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+# Notifications
+ExecStartPost=/home/samson/apex/scripts/systemd/telegram_notify.sh "🟢 SLED Commander Bot online"
+ExecStopPost=/home/samson/apex/scripts/systemd/telegram_notify.sh "⚠️ SLED Commander Bot status: $SERVICE_RESULT (Exit Code: $EXIT_STATUS)"
+
+[Install]
+WantedBy=multi-user.target

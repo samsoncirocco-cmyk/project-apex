@@ -1,0 +1,24 @@
+[Unit]
+Description=Apex TatT Architect Bot
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Type=notify
+Restart=on-failure
+RestartSec=10s
+WatchdogSec=60s
+# Assume container is named 'tatt-architect'
+ExecStart=/usr/bin/docker start -a tatt-architect
+ExecStop=/usr/bin/docker stop tatt-architect
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+# Notifications
+ExecStartPost=/home/samson/apex/scripts/systemd/telegram_notify.sh "🟢 TatT Architect Bot online"
+ExecStopPost=/home/samson/apex/scripts/systemd/telegram_notify.sh "⚠️ TatT Architect Bot status: $SERVICE_RESULT (Exit Code: $EXIT_STATUS)"
+
+[Install]
+WantedBy=multi-user.target
