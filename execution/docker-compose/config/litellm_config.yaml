@@ -1,0 +1,86 @@
+# LiteLLM Proxy Configuration for Project Apex
+# Routes OpenAI-compatible API calls to local Ollama models
+#
+# Usage: Mount this file to /app/config.yaml in the LiteLLM container
+# Docs: https://docs.litellm.ai/docs/proxy/configs
+
+model_list:
+  # Primary chat model - routes to Llama 3.2 (8B)
+  - model_name: gpt-4
+    litellm_params:
+      model: ollama/llama3.2
+      api_base: http://ollama:11434
+      stream: true
+
+  - model_name: gpt-4-turbo
+    litellm_params:
+      model: ollama/llama3.2
+      api_base: http://ollama:11434
+      stream: true
+
+  # Fast model - routes to Llama 3.2 (1B) for quick responses
+  - model_name: gpt-3.5-turbo
+    litellm_params:
+      model: ollama/llama3.2:1b
+      api_base: http://ollama:11434
+      stream: true
+
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: ollama/llama3.2:1b
+      api_base: http://ollama:11434
+      stream: true
+
+  # Embeddings model - routes to nomic-embed-text
+  - model_name: text-embedding-ada-002
+    litellm_params:
+      model: ollama/nomic-embed-text
+      api_base: http://ollama:11434
+
+  - model_name: text-embedding-3-small
+    litellm_params:
+      model: ollama/nomic-embed-text
+      api_base: http://ollama:11434
+
+  # Code model - routes to CodeLlama
+  - model_name: codellama
+    litellm_params:
+      model: ollama/codellama
+      api_base: http://ollama:11434
+      stream: true
+
+  # Direct Ollama model access (no alias)
+  - model_name: ollama/llama3.2
+    litellm_params:
+      model: ollama/llama3.2
+      api_base: http://ollama:11434
+      stream: true
+
+  - model_name: ollama/codellama
+    litellm_params:
+      model: ollama/codellama
+      api_base: http://ollama:11434
+      stream: true
+
+  - model_name: ollama/nomic-embed-text
+    litellm_params:
+      model: ollama/nomic-embed-text
+      api_base: http://ollama:11434
+
+litellm_settings:
+  # Enable request logging
+  set_verbose: false
+  
+  # Request timeout (seconds)
+  request_timeout: 300
+  
+  # Retry configuration
+  num_retries: 2
+  retry_after: 5
+
+general_settings:
+  # Master API key for authentication (optional but recommended)
+  master_key: "${LITELLM_MASTER_KEY:-sk-apex-local-key}"
+  
+  # Database for logging (optional)
+  # database_url: "postgresql://user:pass@host:5432/litellm"

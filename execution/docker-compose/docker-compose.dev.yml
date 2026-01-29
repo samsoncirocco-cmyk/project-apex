@@ -1,0 +1,97 @@
+# Project Apex - Docker Compose Development Overrides
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# Changes from production:
+#   - Relaxed resource limits
+#   - Volume mounts for live code reload
+#   - Debug ports exposed
+#   - Verbose logging
+
+services:
+  sled-commander:
+    volumes:
+      - apex-data:/data:rw
+      - ./config/.env:/config/.env:ro
+      - ../../../bots/sled-commander:/app:rw # Live code mount
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_PATH=/data/apex.db
+      - ENV_FILE=/config/.env
+      - DEBUG=1
+      - LOG_LEVEL=DEBUG
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+
+  tatt-architect:
+    volumes:
+      - apex-data:/data:rw
+      - ./config/.env:/config/.env:ro
+      - ../../../bots/tatt-architect:/app:rw # Live code mount
+    environment:
+      - NODE_ENV=development
+      - DATABASE_PATH=/data/apex.db
+      - ENV_FILE=/config/.env
+      - OLLAMA_HOST=http://ollama:11434
+      - DEBUG=1
+      - LOG_LEVEL=debug
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4G
+
+  security-warden:
+    volumes:
+      - apex-data:/data:rw
+      - ./config/.env:/config/.env:ro
+      - sf-config:/root/.sf:rw
+      - ../../../bots/security-warden:/app:rw # Live code mount
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_PATH=/data/apex.db
+      - ENV_FILE=/config/.env
+      - DEBUG=1
+      - LOG_LEVEL=DEBUG
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+
+  sync-service:
+    volumes:
+      - apex-data:/data:rw
+      - apex-backups:/backups:rw
+      - ./config/.env:/config/.env:ro
+      - ../../../bots/sync-service:/app:rw # Live code mount
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_PATH=/data/apex.db
+      - BACKUP_PATH=/backups
+      - ENV_FILE=/config/.env
+      - DEBUG=1
+      - LOG_LEVEL=DEBUG
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+
+  redis:
+    ports:
+      - "6379:6379" # Expose for debugging
+    command: redis-server --appendonly yes --loglevel verbose
+
+  ollama:
+    ports:
+      - "11434:11434" # Expose for direct testing
+    deploy:
+      resources:
+        limits:
+          cpus: '8.0'
+          memory: 16G
