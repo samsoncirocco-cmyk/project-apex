@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     sqlite3 \
     gnupg \
+    jq \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Salesforce CLI (sf)
@@ -20,12 +21,16 @@ RUN curl -fsSL https://developer.salesforce.com/media/salesforce-cli/sf/channels
 WORKDIR /app
 
 # Install Python dependencies
-COPY requirements.security-warden.txt requirements.txt 2>/dev/null || echo "simple-salesforce>=1.12.0\nsqlite-utils>=3.35\npython-dotenv>=1.0.0\nredis>=5.0.0\nhttpx>=0.27.0\nschedule>=1.2.0" > requirements.txt
+COPY bots/security-warden/requirements.txt requirements.txt 2>/dev/null || echo "simple-salesforce>=1.12.0\nsqlite-utils>=3.35\npython-dotenv>=1.0.0\nredis>=5.0.0\nhttpx>=0.27.0\nschedule>=1.2.0" > requirements.txt
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code (will be empty initially)
-COPY bots/security-warden/ . 2>/dev/null || true
+# Copy application code
+COPY bots/security-warden/ /app/
+COPY bots/shared/ /app/shared/
+
+# Set python path
+ENV PYTHONPATH=/app
 
 # Create necessary directories
 RUN mkdir -p /data /config /root/.sf
