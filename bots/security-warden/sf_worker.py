@@ -8,6 +8,7 @@ sys.path.append("/app/shared")
 
 from worker import BaseWorker
 from sf_auth import get_auth
+from procurement_scanner import ErateScanner
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,16 @@ class SalesforceWorker(BaseWorker):
         self.register_handler("query_records", self.handle_query)
         self.register_handler("create_quote", self.handle_create_quote)
         self.register_handler("audit_permissions", self.handle_audit_permissions)
+        self.register_handler("scan_erate", self.handle_scan_erate)
+
+    def handle_scan_erate(self, payload: dict):
+        """Execute E-Rate scan."""
+        csv_path = payload.get("csv_path")
+        if not csv_path:
+            raise ValueError("Missing 'csv_path' in payload")
+            
+        scanner = ErateScanner()
+        return scanner.scan(csv_path)
 
     def handle_query(self, payload: dict):
         """Execute generic SOQL query."""
